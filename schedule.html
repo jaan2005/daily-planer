@@ -172,7 +172,7 @@ textarea {
       .map((t, i) => `${i + 1}. ${t.task} at ${t.time} [${t.priority}]`)
       .join("\n");
 
-    const prompt = `Here are my tasks for the day:\n\n${taskList}\n\nCan you organize them into a time-blocked daily schedule from 7 AM to 10 PM, including breaks, focus time, and prioritization?`;
+    const prompt = `Here are my tasks for the day:\n\n${taskList}\n\nCan you organize them into a time-blocked daily schedule from 5 AM to 11 PM, including breaks, focus time, and prioritization?`;
 
     navigator.clipboard.writeText(prompt)
       .then(() => {
