@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Daily Planner</title>
+  <style>
+    body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #c0e7ff, #f8e4ff);
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+  min-height: 100vh;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 2px #fff;
+}
+
+input, select, button, textarea {
+  margin: 8px 0;
+  padding: 10px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-size: 16px;
+  transition: 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
+
+button {
+  background: #007bff;
+  color: white;
+  font-weight: bold;
+  border: none;
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+.task {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 15px;
+  margin: 12px 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: 0.2s ease;
+}
+
+.task:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+textarea {
+  background-color: #fff;
+  resize: none;
+}
+
+  </style>
+
+</head>
+<body>
+
+  <h1>🧠 AI Daily Planner</h1>
+
+  <input type="text" id="task" placeholder="Enter your task" />
+  <input type="time" id="time" />
+  <select id="priority">
+    <option value="Low">Low</option>
+    <option value="Medium">Medium</option>
+    <option value="High">High</option>
+  </select>
+  <select id="status">
+    <option value="To Do">To Do</option>
+    <option value="Doing">Doing</option>
+    <option value="Done">Done</option>
+  </select>
+  <button onclick="addTask()" id="addBtn">➕ Add Task</button>
+
+  <button onclick="generatePrompt()">🧠 Plan My Day with AI</button>
+
+  <div id="taskList"></div>
+
+  <script>
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let editIndex = -1;
+
+  function displayTasks() {
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+    tasks.forEach((t, i) => {
+      list.innerHTML += `
+        <div class="task">
+          <strong>${t.task}</strong><br>
+          ⏰ ${t.time} | 📊 ${t.priority} | 🔁 ${t.status}
+          <br><br>
+          <button onclick="editTask(${i})">✏️ Edit</button>
+          <button onclick="deleteTask(${i})">🗑️ Delete</button>
+        </div>
+      `;
+    });
+    document.getElementById("addBtn").innerText = "➕ Add Task";
+  }
+
+  function addTask() {
+    const task = document.getElementById("task").value;
+    const time = document.getElementById("time").value;
+    const priority = document.getElementById("priority").value;
+    const status = document.getElementById("status").value;
+
+    if (task === "" || time === "") {
+      alert("Please enter a task and time.");
+      return;
+    }
+
+    const newTask = { task, time, priority, status };
+
+    if (editIndex === -1) {
+      tasks.push(newTask);
+    } else {
+      tasks[editIndex] = newTask;
+      editIndex = -1;
+    }
+
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    displayTasks();
+
+    document.getElementById("task").value = "";
+    document.getElementById("time").value = "";
+  }
+
+  function deleteTask(index) {
+    tasks.splice(index, 1);
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    displayTasks();
+  }
+
+  function editTask(index) {
+    const t = tasks[index];
+    document.getElementById("task").value = t.task;
+    document.getElementById("time").value = t.time;
+    document.getElementById("priority").value = t.priority;
+    document.getElementById("status").value = t.status;
+
+    editIndex = index;
+    document.getElementById("addBtn").innerText = "✅ Update Task";
+  }
+
+  function generatePrompt() {
+    if (tasks.length === 0) {
+      alert("Add some tasks first.");
+      return;
+    }
+
+    let taskList = tasks
+      .map((t, i) => `${i + 1}. ${t.task} at ${t.time} [${t.priority}]`)
+      .join("\n");
+
+    const prompt = `Here are my tasks for the day:\n\n${taskList}\n\nCan you organize them into a time-blocked daily schedule from 7 AM to 10 PM, including breaks, focus time, and prioritization?`;
+
+    navigator.clipboard.writeText(prompt)
+      .then(() => {
+        alert("✅ Prompt copied to clipboard! Just paste it in ChatGPT.");
+        window.open("https://chat.openai.com/", "_blank");
+      })
+      .catch(err => {
+        alert("❌ Failed to copy prompt. Please copy it manually:\n\n" + prompt);
+      });
+  }
+
+  window.onload = displayTasks;
+</script>
+
+
+</body>
+</html>
